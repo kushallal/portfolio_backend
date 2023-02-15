@@ -8,14 +8,17 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  console.log(JSON.stringify(req.body));
-  // const post = new Post(req.body);
-  // try {
-  //   await post.save();
-  //   res.send(post);
-  // } catch (err) {
-  //   res.status(500);
-  // }
+  const post = new Post(req.body);
+  try {
+    const imageURL =
+      req.protocol + "://" + req.get("host") + "/images/" + req.file.filename;
+
+    post.image = imageURL;
+    await post.save();
+    res.send(post);
+  } catch (err) {
+    res.status(500);
+  }
 });
 
 module.exports = router;

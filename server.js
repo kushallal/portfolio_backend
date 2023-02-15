@@ -12,6 +12,9 @@ const postsRouter = require("./routes/posts");
 //accept json data
 app.use(express.json());
 
+//serve images
+app.use("/images", express.static("PostImages"));
+
 //connect mongodb
 const options = {
   dbName: "Portfolio",
@@ -44,9 +47,15 @@ const storage = multer.diskStorage({
     );
   },
 });
-const image = multer({ storage: storage });
+const image = multer({
+  storage: storage,
+  // onFileUploadComplete: function(file) {
+  //   console.log(file.originalname + " uploaded to  " + file.path);
+  //   //here I should save the destination filename to db
+  // },
+}).single("image");
 
-app.use("/posts", image.single("image"), postsRouter);
+app.use("/posts", image, postsRouter);
 
 app.get("/", (req, res) => {
   res.json({ test: "test message" });

@@ -1,16 +1,16 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const multer = require("multer");
 const morgan = require("morgan");
 const cors = require("cors");
-const path = require("path");
 const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 
 const postsRouter = require("./routes/posts");
+
 //cors config
 app.use(cors({ origin: "*" }));
+
 //accept json data
 app.use(express.json());
 
@@ -33,31 +33,7 @@ mongoose.set("strictQuery", true);
 //logger
 app.use(morgan("combined"));
 
-//multer setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "./PostImages");
-  },
-  filename: function(req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      path.parse(file.originalname).name +
-        "-" +
-        uniqueSuffix +
-        path.extname(file.originalname)
-    );
-  },
-});
-const image = multer({
-  storage: storage,
-  // onFileUploadComplete: function(file) {
-  //   console.log(file.originalname + " uploaded to  " + file.path);
-  //   //here I should save the destination filename to db
-  // },
-}).single("image");
-
-app.use("/posts", image, postsRouter);
+app.use("/posts", postsRouter);
 
 app.get("/", (req, res) => {
   res.json({ test: "test message" });

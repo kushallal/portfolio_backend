@@ -2,13 +2,15 @@ const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const morgan = require("morgan");
+const cors = require("cors");
 const path = require("path");
 const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 
 const postsRouter = require("./routes/posts");
-
+//cors config
+app.use(cors({ origin: "*" }));
 //accept json data
 app.use(express.json());
 

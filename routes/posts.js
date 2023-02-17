@@ -24,9 +24,7 @@ router.post("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const deleteData = await Post.findByIdAndDelete(req.params.id);
   const image = "PostImages/" + deleteData.image.split("/")[4];
-  fs.unlink(image, function(err) {
-    if (err) throw err;
-  });
+  fs.unlinkSync(image);
   res.send(deleteData);
 });
 module.exports = router;

@@ -24,6 +24,20 @@ const storage = multer.diskStorage({
 });
 const image = multer({
   storage: storage,
+  fileFilter: (req, file, cb) => {
+    const extension = path.extname(file.originalname);
+    req.isValid = true;
+    if (
+      extension !== ".png" &&
+      extension !== ".jpg" &&
+      extension !== ".gif" &&
+      extension !== ".jpeg"
+    ) {
+      req.isValid = false;
+      cb(null, false);
+    }
+    cb(null, true);
+  },
 }).single("image");
 
 //routes
@@ -38,7 +52,7 @@ router.get("/", async (req, res) => {
 
 router.post("/", image, async (req, res) => {
   try {
-    if (req.file) {
+    if (req.file && req.isValid) {
       const post = new Post(req.body);
       const imageURL =
         req.protocol + "://" + req.get("host") + "/images/" + req.file.filename;
@@ -46,10 +60,10 @@ router.post("/", image, async (req, res) => {
       await post.save();
       res.send(post);
     } else {
-      throw "file not inserted";
+      throw "file not inserted or invalid file extension";
     }
   } catch (err) {
-    res.send(err);
+    res.status(400).send(err);
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }

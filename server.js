@@ -6,6 +6,7 @@ const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
 
+const usersRouter = require("./routes/users");
 const postsRouter = require("./routes/posts");
 
 //cors config
@@ -31,9 +32,10 @@ mongoose
 mongoose.set("strictQuery", true);
 
 //logger
-app.use(morgan("combined"));
+app.use(morgan("dev"));
 
-app.use("/posts", postsRouter);
+app.use("/api/user", usersRouter);
+app.use("/api/posts", postsRouter);
 
 app.get("/", (req, res) => {
   res.json({ test: "test message" });

@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const app = express();
 require("dotenv").config();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,9 @@ app.use(cors({ origin: "*" }));
 
 //accept json data
 app.use(express.json());
+
+//cookies
+app.use(cookieParser());
 
 //serve images
 app.use("/images", express.static("PostImages"));

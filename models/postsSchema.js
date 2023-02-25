@@ -14,11 +14,6 @@ const postSchema = new Schema(
       type: String,
       required: true,
     },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "Users",
-      required: true,
-    },
   },
   { timestamps: true }
 );

@@ -1,7 +1,10 @@
 require("dotenv").config();
 const { Router } = require("express");
-const Users = require("../models/userSchema");
+const { verify } = require("jsonwebtoken");
 const { hash, compare } = require("bcrypt");
+const Users = require("../models/userSchema");
+const { getAccessToken, getRefreshToken } = require("../helpers/authHelper");
+
 const jwt = require("jsonwebtoken");
 const router = Router();
 
@@ -15,13 +18,11 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await hash(password, 10);
     const user = new Users({ username: username, password: hashedPassword });
     await user.save();
-    console.log(user);
-    const token = jwt.sign(
-      { email: user.username, id: user._id },
-      process.env.SECRET_KEY
-    );
-
-    res.send(token);
+    const accessToken = getAccessToken(user.username, user._id);
+    const refreshToken = getRefreshToken(user.username);
+    res.cookie("access_token", accessToken);
+    res.cookie("refresh_token", refreshToken);
+    res.send("User Registered");
   } catch (err) {
     res.send(err);
   }
@@ -38,14 +39,36 @@ router.post("/login", async (req, res) => {
     if (!passwordValidate) {
       return res.status(401).send("Incorrect Password");
     }
-    const token = jwt.sign(
-      { email: isExisting.username, id: isExisting._id },
-      process.env.SECRET_KEY
-    );
-    res.send(token);
+    const accessToken = getAccessToken(isExisting.username, isExisting._id);
+    const refreshToken = getRefreshToken(isExisting.username);
+
+    res.cookie("access_token", accessToken);
+    res.cookie("refresh_token", refreshToken, {
+      maxAge: 12 * 60 * 60 * 1000,
+    });
+    res.send("User Login");
   } catch (err) {
     res.send(err);
   }
 });
 
+router.post("/refresh", async (req, res) => {
+  try {
+    const isVerified = verify(
+      req.cookies.refresh_token,
+      process.env.REFRESH_SECRET_KEY
+    );
+    const user = await Users.findOne({ username: isVerified.username });
+
+    if (!user) {
+      return res.send("invalid user");
+    }
+
+    const accessToken = getAccessToken(user.username, user._id);
+    res.cookie("access_token", accessToken);
+    res.send("New Access Token Assigned");
+  } catch (err) {
+    res.send(err);
+  }
+});
 module.exports = router;

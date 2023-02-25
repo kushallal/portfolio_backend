@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const { verifyToken } = require("../helpers/authHelper");
 const singleImage = require("../helpers/multerHelper");
 
 const router = express.Router();
@@ -15,7 +16,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", singleImage, async (req, res) => {
+router.post("/", verifyToken, singleImage, async (req, res) => {
   try {
     if (req.file && req.isValid) {
       const post = new Post(req.body);
@@ -35,7 +36,7 @@ router.post("/", singleImage, async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const deleteData = await Post.findByIdAndDelete(req.params.id);
     const image = "PostImages/" + deleteData.image.split("/")[4];

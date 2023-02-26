@@ -1,11 +1,10 @@
 require("dotenv").config();
 const { Router } = require("express");
-const { verify } = require("jsonwebtoken");
-const { hash, compare } = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const Users = require("../models/userSchema");
 const { getAccessToken, getRefreshToken } = require("../helpers/authHelper");
 
-const jwt = require("jsonwebtoken");
 const router = Router();
 
 router.post("/signup", async (req, res) => {
@@ -15,7 +14,7 @@ router.post("/signup", async (req, res) => {
     if (isExisting) {
       return res.status(400).send("User already exists");
     }
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = new Users({ username: username, password: hashedPassword });
     await user.save();
     const accessToken = getAccessToken(user.username, user._id);
@@ -35,7 +34,10 @@ router.post("/login", async (req, res) => {
     if (!isExisting) {
       return res.status(400).send("User doesn't exists");
     }
-    const passwordValidate = await compare(password, isExisting.password);
+    const passwordValidate = await bcrypt.compare(
+      password,
+      isExisting.password
+    );
     if (!passwordValidate) {
       return res.status(401).send("Incorrect Password");
     }
@@ -54,7 +56,7 @@ router.post("/login", async (req, res) => {
 
 router.post("/refresh", async (req, res) => {
   try {
-    const isVerified = verify(
+    const isVerified = jwt.verify(
       req.cookies.refresh_token,
       process.env.REFRESH_SECRET_KEY
     );

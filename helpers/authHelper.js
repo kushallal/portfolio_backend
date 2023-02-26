@@ -21,7 +21,7 @@ const getAccessToken = (username, id) => {
     { username: username, id: id },
     process.env.ACCESS_SECRET_KEY,
     {
-      expiresIn: "30s",
+      expiresIn: "20min",
     }
   );
 };

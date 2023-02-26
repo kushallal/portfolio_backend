@@ -5,6 +5,7 @@ const singleImage = require("../helpers/multerHelper");
 
 const router = express.Router();
 const Post = require("../models/postsSchema");
+const { update } = require("../models/userSchema");
 
 //routes
 router.get("/", async (req, res) => {
@@ -36,6 +37,26 @@ router.post("/", verifyToken, singleImage, async (req, res) => {
   }
 });
 
+router.put("/:id", verifyToken, singleImage, async (req, res) => {
+  try {
+    const prevPost = await Post.findById(req.params.id);
+
+    const updatedPost = req.body;
+    const imageURL =
+      req.protocol + "://" + req.get("host") + "/images/" + req.file.filename;
+    updatedPost.image = imageURL;
+    const update = await Post.findByIdAndUpdate(req.params.id, updatedPost);
+
+    const prevImagePath = "PostImages/" + prevPost.image.split("/")[4];
+    fs.unlinkSync(prevImagePath);
+
+    res.send(update);
+  } catch (err) {
+    res.send(err);
+    fs.unlinkSync(req.file.path);
+  }
+});
+
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const deleteData = await Post.findByIdAndDelete(req.params.id);
@@ -46,4 +67,5 @@ router.delete("/:id", verifyToken, async (req, res) => {
     res.send(err);
   }
 });
+
 module.exports = router;

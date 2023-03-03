@@ -5,7 +5,6 @@ const singleImage = require("../helpers/multerHelper");
 
 const router = express.Router();
 const Post = require("../models/postsSchema");
-const { update } = require("../models/userSchema");
 
 //routes
 router.get("/", async (req, res) => {
@@ -19,16 +18,15 @@ router.get("/", async (req, res) => {
 
 router.post("/", verifyToken, singleImage, async (req, res) => {
   try {
-    if (req.file && req.isValid) {
-      const post = new Post(req.body);
-      const imageURL =
-        req.protocol + "://" + req.get("host") + "/images/" + req.file.filename;
-      post.image = imageURL;
-      await post.save();
-      res.send(post);
-    } else {
-      throw "file not inserted or invalid file extension";
+    if (!req.file) {
+      throw "file not inserted or non-image file ";
     }
+    const post = new Post(req.body);
+    const imageURL =
+      req.protocol + "://" + req.get("host") + "/images/" + req.file.filename;
+    post.image = imageURL;
+    await post.save();
+    res.send(post);
   } catch (err) {
     res.status(400).send(err);
     if (req.file) {
@@ -39,9 +37,15 @@ router.post("/", verifyToken, singleImage, async (req, res) => {
 
 router.put("/:id", verifyToken, singleImage, async (req, res) => {
   try {
+    console.log(req.file);
     const prevPost = await Post.findById(req.params.id);
-
+    if (!req.file) {
+      throw "file not inserted or or non-image file";
+    }
     const updatedPost = req.body;
+    if (!req.body.title || !req.body.description) {
+      throw "post params not enough";
+    }
     const imageURL =
       req.protocol + "://" + req.get("host") + "/images/" + req.file.filename;
     updatedPost.image = imageURL;
@@ -53,7 +57,9 @@ router.put("/:id", verifyToken, singleImage, async (req, res) => {
     res.send(update);
   } catch (err) {
     res.send(err);
-    fs.unlinkSync(req.file.path);
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
   }
 });
 

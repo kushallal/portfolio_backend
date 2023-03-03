@@ -20,17 +20,17 @@ const singleImage = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     const extension = path.extname(file.originalname);
-    req.isValid = true;
+
     if (
       extension !== ".png" &&
       extension !== ".jpg" &&
       extension !== ".gif" &&
       extension !== ".jpeg"
     ) {
-      req.isValid = false;
       cb(null, false);
+    } else {
+      cb(null, true);
     }
-    cb(null, true);
   },
 }).single("image");
 

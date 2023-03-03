@@ -48,7 +48,7 @@ router.post("/login", async (req, res) => {
     res.cookie("refresh_token", refreshToken, {
       maxAge: 12 * 60 * 60 * 1000,
     });
-    res.send("User Login");
+    res.send("User Logged In!");
   } catch (err) {
     res.send(err);
   }

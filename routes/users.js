@@ -30,27 +30,38 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
   try {
+    if (!username || !password) {
+      throw "Enter the username and password";
+    }
     const isExisting = await Users.findOne({ username: username });
     if (!isExisting) {
-      return res.status(400).send("User doesn't exists");
+      throw "User doesn't exists";
     }
     const passwordValidate = await bcrypt.compare(
       password,
       isExisting.password
     );
     if (!passwordValidate) {
-      return res.status(401).send("Incorrect Password");
+      throw "Incorrect Password";
     }
     const accessToken = getAccessToken(isExisting.username, isExisting._id);
     const refreshToken = getRefreshToken(isExisting.username);
 
-    res.cookie("access_token", accessToken);
     res.cookie("refresh_token", refreshToken, {
       maxAge: 12 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
     });
-    res.send("User Logged In!");
+
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    res.send("User Logged In");
   } catch (err) {
-    res.send(err);
+    res.status(400).send(err);
   }
 });
 

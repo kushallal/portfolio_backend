@@ -11,7 +11,13 @@ const usersRouter = require("./routes/users");
 const postsRouter = require("./routes/posts");
 
 //cors config
-app.use(cors({ origin: "*" }));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    exposedHeaders: true,
+  })
+);
 
 //accept json data
 app.use(express.json());

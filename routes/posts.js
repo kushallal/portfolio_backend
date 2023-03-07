@@ -37,7 +37,6 @@ router.post("/", verifyToken, singleImage, async (req, res) => {
 
 router.put("/:id", verifyToken, singleImage, async (req, res) => {
   try {
-    console.log(req.file);
     const prevPost = await Post.findById(req.params.id);
     if (!req.file) {
       throw "file not inserted or or non-image file";
@@ -56,7 +55,7 @@ router.put("/:id", verifyToken, singleImage, async (req, res) => {
 
     res.send(update);
   } catch (err) {
-    res.send(err);
+    res.status(400).send(err);
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
